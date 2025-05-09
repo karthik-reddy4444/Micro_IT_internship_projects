@@ -5,64 +5,94 @@
   <title>Advanced Secure Encryptor/Decryptor Tool</title>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(to right, #dfe9f3, #ffffff);
+      background: linear-gradient(135deg, #d0e6f6, #f0f4f8);
       margin: 0;
-      padding: 40px;
+      padding: 40px 20px;
       color: #333;
+      transition: all 0.3s ease-in-out;
     }
     h1 {
       text-align: center;
       color: #0d47a1;
-      font-size: 36px;
+      font-size: 2.5rem;
       margin-bottom: 30px;
+      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
     }
     .container {
-      max-width: 1000px;
+      max-width: 1100px;
       margin: auto;
     }
     .section {
       background: #ffffff;
-      padding: 25px;
+      padding: 30px;
       margin: 20px 0;
-      border-radius: 12px;
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s;
+    }
+    .section:hover {
+      transform: scale(1.01);
     }
     .section-title {
-      font-size: 24px;
-      margin-bottom: 15px;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
       color: #1a237e;
     }
     textarea, input[type="file"], input[type="password"], select {
       width: 100%;
-      font-size: 16px;
+      font-size: 1rem;
       margin-top: 10px;
       margin-bottom: 20px;
-      padding: 10px;
+      padding: 12px;
       border-radius: 10px;
       border: 1px solid #ccc;
       font-family: 'Fira Code', monospace;
+      transition: all 0.3s ease-in-out;
+    }
+    textarea:focus, input:focus, select:focus {
+      border-color: #1976d2;
+      box-shadow: 0 0 5px rgba(25, 118, 210, 0.3);
+      outline: none;
     }
     button {
-      padding: 12px 24px;
+      padding: 12px 28px;
       font-size: 16px;
       font-weight: bold;
       color: white;
-      background-color: #1976d2;
+      background: linear-gradient(to right, #1976d2, #0d47a1);
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.3s;
+      transition: all 0.3s ease-in-out;
+      margin-right: 10px;
     }
     button:hover {
-      background-color: #0d47a1;
+      background: linear-gradient(to right, #0d47a1, #1976d2);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
     .footer {
       text-align: center;
       margin-top: 40px;
       color: #607d8b;
       font-size: 14px;
+    }
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2rem;
+      }
+      .section-title {
+        font-size: 1.25rem;
+      }
+      button {
+        width: 100%;
+        margin: 10px 0;
+      }
     }
   </style>
 </head>
