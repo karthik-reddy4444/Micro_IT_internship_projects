@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Advanced Secure Encryptor/Decryptor Tool</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #dfe9f3, #ffffff);
+      margin: 0;
+      padding: 40px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #0d47a1;
+      font-size: 36px;
+      margin-bottom: 30px;
+    }
+    .container {
+      max-width: 1000px;
+      margin: auto;
+    }
+    .section {
+      background: #ffffff;
+      padding: 25px;
+      margin: 20px 0;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    }
+    .section-title {
+      font-size: 24px;
+      margin-bottom: 15px;
+      color: #1a237e;
+    }
+    textarea, input[type="file"], input[type="password"], select {
+      width: 100%;
+      font-size: 16px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-family: 'Fira Code', monospace;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      background-color: #1976d2;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #0d47a1;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #607d8b;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🔒 Advanced Secure Encryptor/Decryptor</h1>
+
+  <div class="section">
+    <div class="section-title">Choose Encryption Method</div>
+    <select id="encryptionMethod">
+      <option value="xor">🔑 XOR Encryption (Basic)</option>
+      <option value="aes">🔐 AES Encryption (Secure)</option>
+    </select>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Encrypt</div>
+    <input type="password" id="password" placeholder="Enter password (AES only)">
+    <input type="file" id="encryptFile">
+    <textarea id="encryptText" placeholder="Or type text to encrypt..."></textarea>
+    <button onclick="handleEncrypt()">Encrypt & Download</button>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Decrypt</div>
+    <input type="file" id="decryptFile">
+    <textarea id="decryptText" placeholder="Or paste encrypted text..."></textarea>
+    <button onclick="promptDecrypt()">Decrypt & View</button>
+  </div>
+
+  <div class="footer">© 2025 SecureTool Inc. | End-to-End Encryption with Password Authentication</div>
+</div>
+
+<script>
+  const xorKey = 0xAA;
+
+  function xorEncryptDecrypt(text) {
+    return Array.from(text).map(c => String.fromCharCode(c.charCodeAt(0) ^ xorKey)).join('');
+  }
+
+  async function aesEncrypt(text, password) {
+    const encoder = new TextEncoder();
+    const pwUtf8 = encoder.encode(password);
+    const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const key = await crypto.subtle.importKey('raw', pwHash, 'AES-GCM', false, ['encrypt']);
+    const data = encoder.encode(text);
+    const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
+    const fullData = new Uint8Array(iv.length + encrypted.byteLength);
+    fullData.set(iv, 0);
+    fullData.set(new Uint8Array(encrypted), iv.length);
+    return btoa(String.fromCharCode(...fullData));
+  }
+
+  async function aesDecrypt(base64, password) {
+    const data = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+    const iv = data.slice(0, 12);
+    const encrypted = data.slice(12);
+    const pwUtf8 = new TextEncoder().encode(password);
+    const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8);
+    const key = await crypto.subtle.importKey('raw', pwHash, 'AES-GCM', false, ['decrypt']);
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encrypted);
+    return new TextDecoder().decode(decrypted);
+  }
+
+  function saveToFile(content, filename) {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+  }
+
+  async function handleEncrypt() {
+    const method = document.getElementById('encryptionMethod').value;
+    const password = document.getElementById('password').value;
+    const fileInput = document.getElementById('encryptFile');
+    let text = document.getElementById('encryptText').value.trim();
+
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      text = await file.text();
+    }
+
+    if (!text) return alert("Please provide text or upload a file to encrypt.");
+
+    try {
+      let encrypted;
+      if (method === 'xor') {
+        encrypted = xorEncryptDecrypt(text);
+      } else {
+        if (!password) return alert("Password is required for AES encryption.");
+        encrypted = await aesEncrypt(text, password);
+      }
+      saveToFile(encrypted, 'encrypted.txt');
+    } catch (error) {
+      alert("Encryption failed: " + error.message);
+    }
+  }
+
+  async function handleDecryptWithPassword(password) {
+    const method = document.getElementById('encryptionMethod').value;
+    const fileInput = document.getElementById('decryptFile');
+    let text = document.getElementById('decryptText').value.trim();
+
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      text = await file.text();
+    }
+
+    if (!text) return alert("Please provide text or upload a file to decrypt.");
+
+    try {
+      let decrypted;
+      if (method === 'xor') {
+        decrypted = xorEncryptDecrypt(text);
+      } else {
+        decrypted = await aesDecrypt(text, password);
+      }
+      alert("Decrypted Content:\n\n" + decrypted);
+    } catch (error) {
+      alert("Decryption failed. Reason: " + error.message);
+    }
+  }
+
+  function promptDecrypt() {
+    const method = document.getElementById('encryptionMethod').value;
+    if (method === 'aes') {
+      const password = prompt("Enter password to decrypt using AES:");
+      if (password !== null) handleDecryptWithPassword(password);
+    } else {
+      handleDecryptWithPassword('');
+    }
+  }
+</script>
+</body>
+</html>
